@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseResourceService } from '../base-resource-service';
 import { Vote } from './vote.entity';
+import { VoteStatus } from '../utils/enums/vote-status.enum';
 
 @Injectable()
 export class VotesService extends BaseResourceService<Vote> {
@@ -19,5 +20,16 @@ export class VotesService extends BaseResourceService<Vote> {
 
   async findByComment(commentId: number): Promise<Vote[]> {
     return this.repository.find({ where: { commentId } });
+  }
+
+  async hardDeleteRemoved(beforeDate: Date): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(Vote)
+      .where('status = :status', { status: VoteStatus.REMOVED })
+      .andWhere('updatedAt < :beforeDate', { beforeDate })
+      .execute();
+    return result.affected || 0;
   }
 }
