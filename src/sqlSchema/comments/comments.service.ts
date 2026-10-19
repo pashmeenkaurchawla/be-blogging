@@ -91,4 +91,15 @@ export class CommentsService extends BaseResourceService<Comment> {
     comment.status = CommentStatus.REMOVED;
     return this.repository.save(comment);
   }
+
+  async hardDeleteRemoved(beforeDate: Date): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(Comment)
+      .where('status = :status', { status: CommentStatus.REMOVED })
+      .andWhere('updatedAt < :beforeDate', { beforeDate })
+      .execute();
+    return result.affected || 0;
+  }
 }

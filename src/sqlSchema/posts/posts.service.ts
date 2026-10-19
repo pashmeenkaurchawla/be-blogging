@@ -73,4 +73,15 @@ export class PostsService extends BaseResourceService<Post> {
     post.status = PostStatus.REMOVED;
     await this.repository.save(post);
   }
+
+  async hardDeleteRemoved(beforeDate: Date): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(Post)
+      .where('status = :status', { status: PostStatus.REMOVED })
+      .andWhere('updatedAt < :beforeDate', { beforeDate })
+      .execute();
+    return result.affected || 0;
+  }
 }

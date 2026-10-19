@@ -89,4 +89,15 @@ export class VotesService extends BaseResourceService<Vote> {
 
     return { upvotes, downvotes, total: upvotes + downvotes };
   }
+
+  async hardDeleteRemoved(beforeDate: Date): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(Vote)
+      .where('status = :status', { status: VoteStatus.REMOVED })
+      .andWhere('updatedAt < :beforeDate', { beforeDate })
+      .execute();
+    return result.affected || 0;
+  }
 }
