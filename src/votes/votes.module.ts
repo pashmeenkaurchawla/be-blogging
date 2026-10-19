@@ -7,4 +7,4 @@ import { VotesController } from './votes.controller';
   imports: [SqlSchemaModule, RedisModule],
   controllers: [VotesController],
 })
-export class VotesModule {}
+export class VotesApiModule {}
