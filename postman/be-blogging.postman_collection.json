@@ -1,0 +1,1897 @@
+{
+  "info": {
+    "name": "BE Blogging API",
+    "description": "Complete API collection for be-blogging NestJS backend. Each endpoint has separate success and failure case requests.\n\nSetup: Run '01 - Signup (Success)' then '01 - Login (Success)' first — the token auto-saves to the collection variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "postId", "value": "" },
+    { "key": "commentId", "value": "" },
+    { "key": "replyId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Signup",
+          "item": [
+            {
+              "name": "01 - Signup (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns user without password', () => {",
+                      "  pm.expect(body).to.have.property('id');",
+                      "  pm.expect(body).to.have.property('userName');",
+                      "  pm.expect(body).to.not.have.property('password');",
+                      "});",
+                      "pm.collectionVariables.set('userId', body.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/signup",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Test User\",\n  \"userName\": \"testuser01\",\n  \"email\": \"testuser01@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Signup - Duplicate userName (409)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 409 or 400', () => {",
+                      "  pm.expect([400, 409]).to.include(pm.response.code);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/signup",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Another User\",\n  \"userName\": \"testuser01\",\n  \"email\": \"another@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Signup - Invalid email (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/signup",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Bad Email User\",\n  \"userName\": \"bademail01\",\n  \"email\": \"not-an-email\",\n  \"password\": \"SecurePass123\"\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Signup - Short password (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/signup",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Short Pass\",\n  \"userName\": \"shortpass01\",\n  \"email\": \"short@example.com\",\n  \"password\": \"abc\"\n}"
+                }
+              }
+            },
+            {
+              "name": "05 - Signup - Invalid userName chars (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/signup",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Special Chars\",\n  \"userName\": \"bad user!@#\",\n  \"email\": \"special@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+                }
+              }
+            },
+            {
+              "name": "06 - Signup - Missing required fields (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/signup",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"No Username\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "item": [
+            {
+              "name": "01 - Login (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns accessToken', () => {",
+                      "  pm.expect(body).to.have.property('accessToken');",
+                      "  pm.expect(body).to.have.property('user');",
+                      "});",
+                      "pm.collectionVariables.set('token', body.accessToken);",
+                      "pm.collectionVariables.set('userId', body.user.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/login",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userName\": \"testuser01\",\n  \"password\": \"SecurePass123\"\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Login - Wrong password (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/login",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userName\": \"testuser01\",\n  \"password\": \"WrongPassword99\"\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Login - Non-existent user (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/login",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userName\": \"nonexistentuser999\",\n  \"password\": \"DoesNotMatter1\"\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Login - Empty body (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/users/login",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User",
+          "item": [
+            {
+              "name": "01 - Get User by ID (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns safe fields only', () => {",
+                      "  pm.expect(body).to.have.property('id');",
+                      "  pm.expect(body).to.have.property('email');",
+                      "  pm.expect(body).to.not.have.property('password');",
+                      "  pm.expect(body).to.not.have.property('failedLoginAttempts');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/users/{{userId}}"
+              }
+            },
+            {
+              "name": "02 - Get User - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/users/999999"
+              }
+            },
+            {
+              "name": "03 - Get User - No auth token (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/users/{{userId}}"
+              }
+            },
+            {
+              "name": "04 - Get User - Invalid ID format (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/users/not-a-number"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Create Post",
+          "item": [
+            {
+              "name": "01 - Create Post (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns post with status label', () => {",
+                      "  pm.expect(body).to.have.property('id');",
+                      "  pm.expect(body).to.have.property('title');",
+                      "  pm.expect(body.status).to.eql('ACTIVE');",
+                      "});",
+                      "pm.collectionVariables.set('postId', body.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"My First Blog Post\",\n  \"content\": \"This is the content of my first blog post. Hello world!\"\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Create Post - Missing title (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Content without a title\"\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Create Post - No auth (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Unauthorized Post\",\n  \"content\": \"Should fail\"\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Create Post - Empty body (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Post",
+          "item": [
+            {
+              "name": "01 - Get Post by ID (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Has expected fields', () => {",
+                      "  pm.expect(body).to.have.property('id');",
+                      "  pm.expect(body).to.have.property('title');",
+                      "  pm.expect(body).to.have.property('status');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}"
+              }
+            },
+            {
+              "name": "02 - Get Post - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/999999"
+              }
+            },
+            {
+              "name": "03 - Get Post - Invalid ID (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/abc"
+              }
+            },
+            {
+              "name": "04 - Get Post - Include archived (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts/{{postId}}?include=archived",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts", "{{postId}}"],
+                  "query": [{ "key": "include", "value": "archived" }]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Posts - Offset (v1)",
+          "item": [
+            {
+              "name": "01 - List Posts page 1 (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Has data and meta', () => {",
+                      "  pm.expect(body).to.have.property('data');",
+                      "  pm.expect(body).to.have.property('meta');",
+                      "  pm.expect(body.meta).to.have.property('total');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts?page=1&limit=5&status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "02 - List Posts page 2 (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts?page=2&limit=5&status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts"],
+                  "query": [
+                    { "key": "page", "value": "2" },
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "03 - List Posts - Archived (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts?page=1&limit=5&status=archived",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "archived" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "04 - List Posts - Filter by author (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts?page=1&limit=5&status=active&authorId={{userId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" },
+                    { "key": "authorId", "value": "{{userId}}" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "05 - List Posts - Invalid status (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts?page=1&limit=5&status=deleted",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "deleted" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "06 - List Posts - Limit exceeds max (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts?page=1&limit=100",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "100" }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Posts - Cursor (v2)",
+          "item": [
+            {
+              "name": "01 - Cursor Posts first page (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Has cursor meta', () => {",
+                      "  pm.expect(body.meta).to.have.property('nextCursor');",
+                      "  pm.expect(body.meta).to.have.property('hasMore');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v2/posts?limit=5&status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v2", "posts"],
+                  "query": [
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "02 - Cursor Posts with cursor (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v2/posts?limit=5&status=active&cursor=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v2", "posts"],
+                  "query": [
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" },
+                    { "key": "cursor", "value": "10" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "03 - Cursor Posts - Filter by author (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v2/posts?limit=5&status=active&authorId={{userId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v2", "posts"],
+                  "query": [
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" },
+                    { "key": "authorId", "value": "{{userId}}" }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Post",
+          "item": [
+            {
+              "name": "01 - Update Post title (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Title updated', () => {",
+                      "  pm.expect(pm.response.json().title).to.eql('Updated Blog Title');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Updated Blog Title\"\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Update Post content (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Updated content for the blog post.\"\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Archive Post (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Status is ARCHIVED', () => {",
+                      "  pm.expect(pm.response.json().status).to.eql('ARCHIVED');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": 0\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Reactivate Post (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Status is ACTIVE', () => {",
+                      "  pm.expect(pm.response.json().status).to.eql('ACTIVE');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "05 - Update Post - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/999999",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Does not exist\"\n}"
+                }
+              }
+            },
+            {
+              "name": "06 - Update Post - No auth (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"No auth update\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Post",
+          "item": [
+            {
+              "name": "01 - Delete Post (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns message', () => {",
+                      "  pm.expect(pm.response.json().message).to.eql('Post deleted');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}"
+              }
+            },
+            {
+              "name": "02 - Delete Post - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/v1/posts/999999"
+              }
+            },
+            {
+              "name": "03 - Delete Post - No auth (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "DELETE",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Create Comment",
+          "item": [
+            {
+              "name": "00 - Setup: Create Post for comments",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('postId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Post for Comment Tests\",\n  \"content\": \"This post is used to test comment endpoints.\"\n}"
+                }
+              }
+            },
+            {
+              "name": "01 - Create Comment (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns comment', () => {",
+                      "  pm.expect(body).to.have.property('id');",
+                      "  pm.expect(body).to.have.property('content');",
+                      "  pm.expect(body.status).to.eql('ACTIVE');",
+                      "});",
+                      "pm.collectionVariables.set('commentId', body.id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"This is a great blog post!\"\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Create Reply to Comment (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('replyId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Thanks! I agree with your comment.\"\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Create Comment - Post not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/999999/comments",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Comment on non-existent post\"\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Create Comment - Empty content (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                }
+              }
+            },
+            {
+              "name": "05 - Create Comment - No auth (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"No auth comment\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Comment",
+          "item": [
+            {
+              "name": "01 - Get Comment by ID (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Has content', () => {",
+                      "  pm.expect(pm.response.json()).to.have.property('content');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}"
+              }
+            },
+            {
+              "name": "02 - Get Comment - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/999999"
+              }
+            },
+            {
+              "name": "03 - Get Comment - Wrong post (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/999999/comments/{{commentId}}"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Comments - Offset (v1)",
+          "item": [
+            {
+              "name": "01 - List Comments page 1 (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Has data and meta', () => {",
+                      "  pm.expect(body).to.have.property('data');",
+                      "  pm.expect(body.meta).to.have.property('total');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts/{{postId}}/comments?page=1&limit=5&status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts", "{{postId}}", "comments"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "02 - List Comments - Post not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v1/posts/999999/comments?page=1&limit=5",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "posts", "999999", "comments"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "5" }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Comments - Cursor (v2)",
+          "item": [
+            {
+              "name": "01 - Cursor Comments first page (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Has cursor meta', () => {",
+                      "  pm.expect(body.meta).to.have.property('nextCursor');",
+                      "  pm.expect(body.meta).to.have.property('hasMore');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v2/posts/{{postId}}/comments?limit=5&status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v2", "posts", "{{postId}}", "comments"],
+                  "query": [
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "02 - Cursor Comments with cursor (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/v2/posts/{{postId}}/comments?limit=5&status=active&cursor=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v2", "posts", "{{postId}}", "comments"],
+                  "query": [
+                    { "key": "limit", "value": "5" },
+                    { "key": "status", "value": "active" },
+                    { "key": "cursor", "value": "10" }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Comment",
+          "item": [
+            {
+              "name": "01 - Update Comment content (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Updated comment text\"\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Archive Comment (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Status is ARCHIVED', () => {",
+                      "  pm.expect(pm.response.json().status).to.eql('ARCHIVED');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": 0\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Update Comment - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/999999",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Updating non-existent comment\"\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Update Comment - No auth (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "PATCH",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"No auth update\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Comment",
+          "item": [
+            {
+              "name": "01 - Delete Comment (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns message', () => {",
+                      "  pm.expect(pm.response.json().message).to.eql('Comment deleted');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}"
+              }
+            },
+            {
+              "name": "02 - Delete Comment - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/999999"
+              }
+            },
+            {
+              "name": "03 - Delete Comment - No auth (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "DELETE",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Votes",
+      "item": [
+        {
+          "name": "Post Votes",
+          "item": [
+            {
+              "name": "00 - Setup: Create Post for votes",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('postId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Post for Vote Tests\",\n  \"content\": \"Testing voting on this post.\"\n}"
+                }
+              }
+            },
+            {
+              "name": "01 - Upvote Post (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Vote is upvote', () => {",
+                      "  pm.expect(pm.response.json().vote).to.eql('upvote');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Downvote Post (Success - flips vote)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Vote is downvote', () => {",
+                      "  pm.expect(pm.response.json().vote).to.eql('downvote');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": -1\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Toggle Vote (same vote negates)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Vote toggled to upvote', () => {",
+                      "  pm.expect(pm.response.json().vote).to.eql('upvote');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": -1\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Vote Post - Invalid value (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 5\n}"
+                }
+              }
+            },
+            {
+              "name": "05 - Vote Post - Post not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/999999/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "06 - Vote Post - No auth (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 401', () => pm.response.to.have.status(401));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "07 - Get Post Vote Counts (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Has vote counts', () => {",
+                      "  pm.expect(body).to.have.property('upvotes');",
+                      "  pm.expect(body).to.have.property('downvotes');",
+                      "  pm.expect(body).to.have.property('total');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/votes"
+              }
+            },
+            {
+              "name": "08 - Get Vote Counts - Post not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/999999/votes"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Comment Votes",
+          "item": [
+            {
+              "name": "00 - Setup: Create Comment for votes",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('commentId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Comment for vote testing\"\n}"
+                }
+              }
+            },
+            {
+              "name": "01 - Upvote Comment (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Vote is upvote', () => {",
+                      "  pm.expect(pm.response.json().vote).to.eql('upvote');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "02 - Downvote Comment (Success - flips)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Vote is downvote', () => {",
+                      "  pm.expect(pm.response.json().vote).to.eql('downvote');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": -1\n}"
+                }
+              }
+            },
+            {
+              "name": "03 - Vote Comment - Comment not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/999999/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "04 - Vote Comment - Wrong post (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/999999/comments/{{commentId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "05 - Vote Comment - Invalid value (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}/votes",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vote\": 0\n}"
+                }
+              }
+            },
+            {
+              "name": "06 - Get Comment Vote Counts (Success)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.test('Has vote counts', () => {",
+                      "  pm.expect(body).to.have.property('upvotes');",
+                      "  pm.expect(body).to.have.property('downvotes');",
+                      "  pm.expect(body).to.have.property('total');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/{{commentId}}/votes"
+              }
+            },
+            {
+              "name": "07 - Get Comment Votes - Not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/v1/posts/{{postId}}/comments/999999/votes"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

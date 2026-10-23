@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
-    "start:dev": "nodemon --watch src --ext ts --exec ts-node src/main.ts",
+    "start:dev": "nodemon --watch src --ext ts --exec ts-node -r tsconfig-paths/register src/main.ts",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix"
   },
@@ -38,6 +38,7 @@
     "eslint": "^10.13.0",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.4"
   }
 }
