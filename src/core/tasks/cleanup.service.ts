@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { PostsService } from '../../sqlSchema/posts/posts.service';
-import { CommentsService } from '../../sqlSchema/comments/comments.service';
-import { VotesService } from '../../sqlSchema/votes/votes.service';
-import { LoggerService } from '../logger/logger.service';
+import { PostsService } from 'src/sqlSchema/posts/posts.service';
+import { CommentsService } from 'src/sqlSchema/comments/comments.service';
+import { VotesService } from 'src/sqlSchema/votes/votes.service';
+import { LoggerService } from 'src/core/logger/logger.service';
 
 @Injectable()
 export class CleanupService {

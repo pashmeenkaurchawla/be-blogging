@@ -1,9 +1,10 @@
-import { Post } from '../../sqlSchema/posts/posts.entity';
+import { Post } from 'src/sqlSchema/posts/posts.entity';
+import { PostStatus } from 'src/sqlSchema/utils/enums/post-status.enum';
 
 const STATUS_LABELS: Record<number, string> = {
-  1: 'ACTIVE',
-  0: 'ARCHIVED',
-  [-1]: 'DELETED',
+  [PostStatus.ACTIVE]: 'ACTIVE',
+  [PostStatus.ARCHIVED]: 'ARCHIVED',
+  [PostStatus.REMOVED]: 'DELETED',
 };
 
 export class PostResponseDto {

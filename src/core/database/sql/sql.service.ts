@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { LoggerService } from '../../logger/logger.service';
+import { LoggerService } from 'src/core/logger/logger.service';
 
 @Injectable()
 export class SqlService implements OnModuleInit, OnModuleDestroy {

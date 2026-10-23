@@ -5,8 +5,8 @@ import {
   BeforeApplicationShutdown,
 } from '@nestjs/common';
 import Redis from 'ioredis';
-import { LoggerService } from '../../logger/logger.service';
-import { RedisConfigService } from '../../../config/redis-config.service';
+import { LoggerService } from 'src/core/logger/logger.service';
+import { RedisConfigService } from 'src/config/redis-config.service';
 
 @Injectable()
 export class RedisService
@@ -19,6 +19,10 @@ export class RedisService
     private readonly logger: LoggerService,
   ) {}
 
+  private get isReady(): boolean {
+    return this.client?.status === 'ready';
+  }
+
   async onModuleInit() {
     this.logger.log('Connecting to Redis...', 'RedisService');
 
@@ -27,6 +31,8 @@ export class RedisService
       port: this.redisConfig.port,
       password: this.redisConfig.password || undefined,
       lazyConnect: true,
+      retryStrategy: (times) => Math.min(times * 500, 5000),
+      maxRetriesPerRequest: 1,
     });
 
     this.client.on('connect', () =>
@@ -46,8 +52,12 @@ export class RedisService
       this.logger.log('Redis reconnecting...', 'RedisService'),
     );
 
-    await this.client.connect();
-    this.logger.log('Redis connection established', 'RedisService');
+    this.client.connect().catch((err) =>
+      this.logger.warn(
+        `Redis unavailable at startup: ${err.message}. App continues without cache.`,
+        'RedisService',
+      ),
+    );
   }
 
   async beforeApplicationShutdown(signal?: string) {
@@ -65,7 +75,50 @@ export class RedisService
     }
   }
 
-  getClient(): Redis {
-    return this.client;
+  async get(key: string): Promise<string | null> {
+    if (!this.isReady) return null;
+    try {
+      return await this.client.get(key);
+    } catch {
+      return null;
+    }
+  }
+
+  async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
+    if (!this.isReady) return;
+    try {
+      if (ttlSeconds) {
+        await this.client.set(key, value, 'EX', ttlSeconds);
+      } else {
+        await this.client.set(key, value);
+      }
+    } catch {}
+  }
+
+  async del(...keys: string[]): Promise<number> {
+    if (keys.length === 0 || !this.isReady) return 0;
+    try {
+      return await this.client.del(...keys);
+    } catch {
+      return 0;
+    }
+  }
+
+  async sadd(key: string, ...members: string[]): Promise<number> {
+    if (!this.isReady) return 0;
+    try {
+      return await this.client.sadd(key, ...members);
+    } catch {
+      return 0;
+    }
+  }
+
+  async smembers(key: string): Promise<string[]> {
+    if (!this.isReady) return [];
+    try {
+      return await this.client.smembers(key);
+    } catch {
+      return [];
+    }
   }
 }

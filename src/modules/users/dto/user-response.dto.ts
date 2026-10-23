@@ -1,4 +1,4 @@
-import { User } from '../../sqlSchema/users/user.entity';
+import { User } from 'src/sqlSchema/users/user.entity';
 
 export class UserResponseDto {
   id: number;

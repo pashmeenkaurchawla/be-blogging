@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/posts.module';
-import { CommentsModule } from './comments/comments.module';
-import { VotesModule } from './votes/votes.module';
+import { UsersModule } from 'src/sqlSchema/users/users.module';
+import { PostsModule } from 'src/sqlSchema/posts/posts.module';
+import { CommentsModule } from 'src/sqlSchema/comments/comments.module';
+import { VotesModule } from 'src/sqlSchema/votes/votes.module';
 
 @Module({
   imports: [UsersModule, PostsModule, CommentsModule, VotesModule],

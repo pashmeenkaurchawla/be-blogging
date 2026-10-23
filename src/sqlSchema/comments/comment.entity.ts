@@ -8,10 +8,10 @@ import {
   Check,
   Index,
 } from 'typeorm';
-import { BaseEntity } from '../interfaces/base.entity';
-import { User } from '../users/user.entity';
-import { Post } from '../posts/posts.entity';
-import { CommentStatus } from '../utils/enums/comment-status.enum';
+import { BaseEntity } from 'src/sqlSchema/interfaces/base.entity';
+import { User } from 'src/sqlSchema/users/user.entity';
+import { Post } from 'src/sqlSchema/posts/posts.entity';
+import { CommentStatus } from 'src/sqlSchema/utils/enums/comment-status.enum';
 
 @Entity('comments')
 @Check('CHK_comment_status', 'status IN (-1, 0, 1)')

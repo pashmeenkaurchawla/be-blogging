@@ -9,12 +9,12 @@ import {
   Check,
   Index,
 } from 'typeorm';
-import { BaseEntity } from '../interfaces/base.entity';
-import { User } from '../users/user.entity';
-import { Post } from '../posts/posts.entity';
-import { Comment } from '../comments/comment.entity';
-import { VoteType } from '../utils/enums/vote-type.enum';
-import { VoteStatus } from '../utils/enums/vote-status.enum';
+import { BaseEntity } from 'src/sqlSchema/interfaces/base.entity';
+import { User } from 'src/sqlSchema/users/user.entity';
+import { Post } from 'src/sqlSchema/posts/posts.entity';
+import { Comment } from 'src/sqlSchema/comments/comment.entity';
+import { VoteType } from 'src/sqlSchema/utils/enums/vote-type.enum';
+import { VoteStatus } from 'src/sqlSchema/utils/enums/vote-status.enum';
 
 @Entity('votes')
 @Unique('UQ_user_post_comment', ['authorId', 'postId', 'commentId'])

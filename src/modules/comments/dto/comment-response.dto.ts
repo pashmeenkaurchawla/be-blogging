@@ -1,5 +1,5 @@
-import { Comment } from '../../sqlSchema/comments/comment.entity';
-import { CommentStatus } from '../../sqlSchema/utils/enums/comment-status.enum';
+import { Comment } from 'src/sqlSchema/comments/comment.entity';
+import { CommentStatus } from 'src/sqlSchema/utils/enums/comment-status.enum';
 
 const STATUS_LABELS: Record<number, string> = {
   [CommentStatus.ACTIVE]: 'ACTIVE',

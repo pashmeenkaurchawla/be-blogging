@@ -1,10 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import { appConfig, sqlConfig, redisConfig } from './app.config';
-import { AppConfigService } from './app-config.service';
-import { SqlConfigService } from './sql-config.service';
-import { RedisConfigService } from './redis-config.service';
+import { appConfig, sqlConfig, redisConfig } from 'src/config/app.config';
+import { AppConfigService } from 'src/config/app-config.service';
+import { SqlConfigService } from 'src/config/sql-config.service';
+import { RedisConfigService } from 'src/config/redis-config.service';
 
 @Global()
 @Module({

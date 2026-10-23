@@ -1,11 +1,19 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { BaseResourceService } from '../base-resource-service';
-import { User } from './user.entity';
-import { UserStatus } from '../utils/enums/user-status.enum';
-import { AppConfigService } from '../../config/app-config.service';
+import { BaseResourceService } from 'src/sqlSchema/base-resource-service';
+import { User } from 'src/sqlSchema/users/user.entity';
+import { UserStatus } from 'src/sqlSchema/utils/enums/user-status.enum';
+import { AppConfigService } from 'src/config/app-config.service';
+import { LoggerService } from 'src/core/logger/logger.service';
 
 @Injectable()
 export class UsersService extends BaseResourceService<User> {
@@ -13,6 +21,8 @@ export class UsersService extends BaseResourceService<User> {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly appConfig: AppConfigService,
+    private readonly logger: LoggerService,
+    private readonly jwtService: JwtService,
   ) {
     super(usersRepository);
   }
@@ -25,12 +35,22 @@ export class UsersService extends BaseResourceService<User> {
     return this.repository.findOne({ where: { userName } });
   }
 
+  async findByIdOrFail(id: number): Promise<User> {
+    const user = await this.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   async signup(dto: {
     name: string;
     userName: string;
     email: string;
     password: string;
   }): Promise<User> {
+    this.logger.log(`Signup attempt: ${dto.userName}`, 'UsersService');
+
     const existingUserName = await this.findByUserName(dto.userName);
     if (existingUserName) {
       throw new ConflictException('Username already taken');
@@ -46,29 +66,58 @@ export class UsersService extends BaseResourceService<User> {
       this.appConfig.bcryptSaltRounds,
     );
 
-    return super.create({
+    const user = await this.create({
       name: dto.name,
       userName: dto.userName,
       email: dto.email,
       password: hashedPassword,
     });
+
+    this.logger.log(`User created: ${user.id}`, 'UsersService');
+    return user;
   }
 
-  async validateCredentials(
-    userName: string,
-    password: string,
-  ): Promise<User | null> {
-    const user = await this.findByUserName(userName);
+  async login(dto: {
+    userName: string;
+    password: string;
+  }): Promise<{ accessToken: string; user: User }> {
+    this.logger.log(`Login attempt: ${dto.userName}`, 'UsersService');
+
+    let user = await this.findByUserName(dto.userName);
     if (!user) {
-      return null;
+      this.logger.warn(`Login failed — unknown user: ${dto.userName}`, 'UsersService');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    return isMatch ? user : null;
+    user = await this.unblockIfExpired(user);
+
+    if (this.isBlocked(user)) {
+      this.logger.warn(`Login blocked — account locked: ${user.id}`, 'UsersService');
+      throw new ForbiddenException('Account is temporarily blocked');
+    }
+
+    const isMatch = await bcrypt.compare(dto.password, user.password);
+    if (!isMatch) {
+      this.logger.warn(`Login failed — wrong password: ${user.id}`, 'UsersService');
+      await this.recordFailedLogin(user.id);
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    await this.onLoginSuccess(user.id);
+
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      userName: user.userName,
+    });
+
+    this.logger.log(`Login success: ${user.id}`, 'UsersService');
+    return { accessToken, user };
   }
 
-  async updateLastLogin(userId: number): Promise<void> {
+  private async onLoginSuccess(userId: number): Promise<void> {
     await this.repository.update(userId, {
+      failedLoginAttempts: 0,
+      firstFailedLoginAt: null,
       lastLoginAt: new Date(),
     } as any);
   }
@@ -96,15 +145,6 @@ export class UsersService extends BaseResourceService<User> {
       user.status = UserStatus.BLOCKED;
     }
 
-    await this.repository.save(user);
-  }
-
-  async resetLoginAttempts(userId: number): Promise<void> {
-    const user = await this.findById(userId);
-    if (!user) return;
-
-    user.failedLoginAttempts = 0;
-    user.firstFailedLoginAt = null;
     await this.repository.save(user);
   }
 

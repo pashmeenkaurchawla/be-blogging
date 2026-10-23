@@ -6,9 +6,9 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
-import { AppModule } from './app.module';
-import { AppConfigService } from './config/app-config.service';
-import { LoggerService } from './core/logger/logger.service';
+import { AppModule } from 'src/app.module';
+import { AppConfigService } from 'src/config/app-config.service';
+import { LoggerService } from 'src/core/logger/logger.service';
 
 async function bootstrap() {
   const logger = new LoggerService();
@@ -30,6 +30,7 @@ async function bootstrap() {
     origin: true,
   });
 
+  //what and why
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const port = appConfig.port;

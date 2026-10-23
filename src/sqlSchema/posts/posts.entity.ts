@@ -8,9 +8,9 @@ import {
   Check,
   Index,
 } from 'typeorm';
-import { BaseEntity } from '../interfaces/base.entity';
-import { User } from '../users/user.entity';
-import { PostStatus } from '../utils/enums/post-status.enum';
+import { BaseEntity } from 'src/sqlSchema/interfaces/base.entity';
+import { User } from 'src/sqlSchema/users/user.entity';
+import { PostStatus } from 'src/sqlSchema/utils/enums/post-status.enum';
 
 @Entity('posts')
 @Check('CHK_post_status', 'status IN (-1, 0, 1)')

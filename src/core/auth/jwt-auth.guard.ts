@@ -5,9 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RedisService } from '../database/redis/redis.service';
-import { UsersService } from '../../sqlSchema/users/users.service';
-import { UserStatus } from '../../sqlSchema/utils/enums/user-status.enum';
+import { RedisService } from 'src/core/database/redis/redis.service';
+import { UsersService } from 'src/sqlSchema/users/users.service';
+import { UserStatus } from 'src/sqlSchema/utils/enums/user-status.enum';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -26,11 +26,10 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const token = authHeader.slice(7);
-    const redis = this.redisService.getClient();
     const cacheKey = `jwt:${token}`;
 
     try {
-      const cached = await redis.get(cacheKey);
+      const cached = await this.redisService.get(cacheKey);
       if (cached) {
         request.user = JSON.parse(cached);
         return true;
@@ -44,7 +43,7 @@ export class JwtAuthGuard implements CanActivate {
       }
 
       const userData = { id: user.id, userName: user.userName };
-      await redis.set(cacheKey, JSON.stringify(userData), 'EX', 300);
+      await this.redisService.set(cacheKey, JSON.stringify(userData), 300);
       request.user = userData;
 
       return true;

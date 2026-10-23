@@ -1,15 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
-import { BaseResourceService } from '../base-resource-service';
-import { Vote } from './vote.entity';
-import { VoteStatus } from '../utils/enums/vote-status.enum';
+import { BaseResourceService } from 'src/sqlSchema/base-resource-service';
+import { Vote } from 'src/sqlSchema/votes/vote.entity';
+import { VoteStatus } from 'src/sqlSchema/utils/enums/vote-status.enum';
+import { PostsService } from 'src/sqlSchema/posts/posts.service';
+import { CommentsService } from 'src/sqlSchema/comments/comments.service';
+import { LoggerService } from 'src/core/logger/logger.service';
 
 @Injectable()
 export class VotesService extends BaseResourceService<Vote> {
   constructor(
     @InjectRepository(Vote)
     private readonly votesRepository: Repository<Vote>,
+    @Inject(forwardRef(() => PostsService))
+    private readonly postsService: PostsService,
+    @Inject(forwardRef(() => CommentsService))
+    private readonly commentsService: CommentsService,
+    private readonly logger: LoggerService,
   ) {
     super(votesRepository);
   }
@@ -22,7 +35,59 @@ export class VotesService extends BaseResourceService<Vote> {
     return this.repository.find({ where: { commentId } });
   }
 
-  async upsertVote(
+  async voteOnPost(
+    authorId: number,
+    postId: number,
+    voteValue: number,
+  ): Promise<Vote> {
+    await this.postsService.findByIdOrFail(postId);
+    return this.upsertVote(authorId, postId, null, voteValue);
+  }
+
+  async voteOnComment(
+    authorId: number,
+    postId: number,
+    commentId: number,
+    voteValue: number,
+  ): Promise<Vote> {
+    await this.postsService.findByIdOrFail(postId);
+    const comment = await this.commentsService.findById(commentId);
+    if (!comment) {
+      throw new NotFoundException(`Comment with id=${commentId} not found`);
+    }
+    if (comment.postId !== postId) {
+      throw new NotFoundException(
+        `Comment with id=${commentId} not found on post with id=${postId}`,
+      );
+    }
+    return this.upsertVote(authorId, postId, commentId, voteValue);
+  }
+
+  async getPostVoteCounts(
+    postId: number,
+  ): Promise<{ upvotes: number; downvotes: number; total: number }> {
+    await this.postsService.findByIdOrFail(postId);
+    return this.getVoteCounts(postId);
+  }
+
+  async getCommentVoteCounts(
+    postId: number,
+    commentId: number,
+  ): Promise<{ upvotes: number; downvotes: number; total: number }> {
+    await this.postsService.findByIdOrFail(postId);
+    const comment = await this.commentsService.findById(commentId);
+    if (!comment) {
+      throw new NotFoundException(`Comment with id=${commentId} not found`);
+    }
+    if (comment.postId !== postId) {
+      throw new NotFoundException(
+        `Comment with id=${commentId} not found on post with id=${postId}`,
+      );
+    }
+    return this.getVoteCounts(postId, commentId);
+  }
+
+  private async upsertVote(
     authorId: number,
     postId: number,
     commentId: number | null,
@@ -37,13 +102,16 @@ export class VotesService extends BaseResourceService<Vote> {
     const existing = await this.findOne(where);
 
     if (!existing) {
-      return this.create({
+      const vote = await this.create({
         authorId,
         postId,
         commentId,
         vote: voteValue,
         status: VoteStatus.ACTIVE,
       });
+      const target = commentId ? `comment ${commentId}` : `post ${postId}`;
+      this.logger.log(`Vote created: ${vote.id} on ${target} by user ${authorId}`, 'VotesService');
+      return vote;
     }
 
     if (existing.vote === voteValue) {
@@ -52,10 +120,13 @@ export class VotesService extends BaseResourceService<Vote> {
       existing.vote = voteValue as Vote['vote'];
     }
 
-    return this.repository.save(existing);
+    const saved = await this.repository.save(existing);
+    const target = commentId ? `comment ${commentId}` : `post ${postId}`;
+    this.logger.log(`Vote toggled: ${saved.id} on ${target} by user ${authorId}`, 'VotesService');
+    return saved;
   }
 
-  async getVoteCounts(
+  private async getVoteCounts(
     postId: number,
     commentId?: number | null,
   ): Promise<{ upvotes: number; downvotes: number; total: number }> {

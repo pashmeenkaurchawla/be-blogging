@@ -6,8 +6,8 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { CreateReservationDto } from './dto/create-reservation.dto';
-import { ReservationsService } from './reservations.service';
+import { CreateReservationDto } from 'src/reservations/dto/create-reservation.dto';
+import { ReservationsService } from 'src/reservations/reservations.service';
 
 @Controller('reservations')
 export class ReservationsController {

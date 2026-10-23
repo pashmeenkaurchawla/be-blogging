@@ -7,8 +7,8 @@ import {
   Unique,
   Index,
 } from 'typeorm';
-import { BaseEntity } from '../interfaces/base.entity';
-import { UserStatus } from '../utils/enums/user-status.enum';
+import { BaseEntity } from 'src/sqlSchema/interfaces/base.entity';
+import { UserStatus } from 'src/sqlSchema/utils/enums/user-status.enum';
 
 @Entity('users')
 @Check('CHK_user_status', 'status IN (-1, 0, 1)')
@@ -18,10 +18,10 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: false })
   name: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
   userName: string;
 
-  @Column({ type: 'varchar', length: 254, unique: true, nullable: false })
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
   email: string;
 
   @Column({ type: 'varchar', length: 255, nullable: false })

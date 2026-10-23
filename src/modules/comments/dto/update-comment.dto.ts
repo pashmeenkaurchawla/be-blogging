@@ -1,5 +1,5 @@
 import { IsOptional, IsString, MaxLength, IsIn } from 'class-validator';
-import { CommentStatus } from '../../sqlSchema/utils/enums/comment-status.enum';
+import { CommentStatus } from 'src/sqlSchema/utils/enums/comment-status.enum';
 
 export class UpdateCommentDto {
   @IsOptional()

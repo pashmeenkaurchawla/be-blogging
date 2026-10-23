@@ -1,14 +1,12 @@
 import { Repository, FindOptionsWhere, DeepPartial } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { IBaseResourceService } from './interfaces/base-resource.interface';
-import { BaseEntity } from './interfaces/base.entity';
+import { IBaseResourceService } from 'src/sqlSchema/interfaces/base-resource.interface';
+import { BaseEntity } from 'src/sqlSchema/interfaces/base.entity';
 
-export class BaseResourceService<T extends BaseEntity>
-  implements IBaseResourceService<T>
-{
-  constructor(
-    protected readonly repository: Repository<T>,
-  ) {}
+export class BaseResourceService<
+  T extends BaseEntity,
+> implements IBaseResourceService<T> {
+  constructor(protected readonly repository: Repository<T>) {}
 
   async findAll(): Promise<T[]> {
     return this.repository.find();

@@ -1,5 +1,10 @@
-import { Vote } from '../../sqlSchema/votes/vote.entity';
-import { VoteType } from '../../sqlSchema/utils/enums/vote-type.enum';
+import { Vote } from 'src/sqlSchema/votes/vote.entity';
+import { VoteType } from 'src/sqlSchema/utils/enums/vote-type.enum';
+
+const VOTE_LABELS: Record<number, 'upvote' | 'downvote'> = {
+  [VoteType.UPVOTE]: 'upvote',
+  [VoteType.DOWNVOTE]: 'downvote',
+};
 
 export class VoteResponseDto {
   id: number;
@@ -15,7 +20,7 @@ export class VoteResponseDto {
     dto.authorId = vote.authorId;
     dto.postId = vote.postId;
     dto.commentId = vote.commentId;
-    dto.vote = vote.vote === VoteType.UPVOTE ? 'upvote' : 'downvote';
+    dto.vote = VOTE_LABELS[vote.vote];
     dto.createdAt = vote.createdAt;
     return dto;
   }

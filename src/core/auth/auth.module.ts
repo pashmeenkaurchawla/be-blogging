@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { SqlSchemaModule } from '../../sqlSchema/sql-schema.module';
-import { RedisModule } from '../database/redis/redis.module';
-import { AppConfigService } from '../../config/app-config.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { SqlSchemaModule } from 'src/sqlSchema/sql-schema.module';
+import { RedisModule } from 'src/core/database/redis/redis.module';
+import { AppConfigService } from 'src/config/app-config.service';
+import { JwtAuthGuard } from 'src/core/auth/jwt-auth.guard';
 
 @Module({
   imports: [

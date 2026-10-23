@@ -1,5 +1,5 @@
 import { IsOptional, IsString, MaxLength, IsIn } from 'class-validator';
-import { PostStatus } from '../../sqlSchema/utils/enums/post-status.enum';
+import { PostStatus } from 'src/sqlSchema/utils/enums/post-status.enum';
 
 export class UpdatePostDto {
   @IsOptional()

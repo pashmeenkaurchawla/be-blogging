@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SqlService } from './sql.service';
-import { SqlConfigService } from '../../../config/sql-config.service';
-import { AppConfigService } from '../../../config/app-config.service';
+import { SqlService } from 'src/core/database/sql/sql.service';
+import { SqlConfigService } from 'src/config/sql-config.service';
+import { AppConfigService } from 'src/config/app-config.service';
 
 @Module({
   imports: [

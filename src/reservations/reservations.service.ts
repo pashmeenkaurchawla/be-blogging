@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { CreateReservationDto } from './dto/create-reservation.dto';
-import { Reservation } from './entities/reservation.entity';
+import { CreateReservationDto } from 'src/reservations/dto/create-reservation.dto';
+import { Reservation } from 'src/reservations/entities/reservation.entity';
 
 /**
  * In-memory store, scoped per table. This is where a real system would use

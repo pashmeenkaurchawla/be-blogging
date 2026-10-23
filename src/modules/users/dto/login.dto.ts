@@ -1,6 +1,5 @@
 import { Transform } from 'class-transformer';
 import {
-  IsEmail,
   IsNotEmpty,
   IsString,
   Matches,
@@ -8,24 +7,15 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateUserDto {
-  @IsNotEmpty()
+export class LoginDto {
   @IsString()
-  @Transform(({ value }) => value?.trim())
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => value?.trim()?.toLowerCase())
   @Matches(/^[a-zA-Z0-9_]+$/)
   @MinLength(3)
   @MaxLength(255)
   userName: string;
 
-  @IsEmail()
-  @MaxLength(254)
-  email: string;
-
+  @IsNotEmpty()
   @IsString()
   @MinLength(8)
   @MaxLength(255)
